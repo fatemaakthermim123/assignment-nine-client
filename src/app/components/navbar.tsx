@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 
@@ -24,11 +24,9 @@ function Navbar() {
   const [popoverOpen, setPopoverOpen] = useState(false)
   const { data: session, isPending } = authClient.useSession()
 
-  useEffect(() => {
-    console.log("Session:", session)
-  }, [session])
-
   const user = session?.user
+  const rawRole = (user as { role?: string } | undefined)?.role
+  const role = rawRole === "vendor" || rawRole === "admin" ? rawRole : "customer"
 
   async function handleSignOut() {
     setPopoverOpen(false)
@@ -108,6 +106,16 @@ function Navbar() {
                     {user.email}
                   </p>
                 </div>
+                <button
+                  type="button"
+                  className="flex w-full items-center rounded-md px-2.5 py-2 text-left text-sm transition-colors hover:bg-muted"
+                  onClick={() => {
+                    setPopoverOpen(false)
+                    router.push(`/dashboard/${role}`)
+                  }}
+                >
+                  My Dashboard
+                </button>
                 <button
                   type="button"
                   className="flex w-full items-center rounded-md px-2.5 py-2 text-left text-sm transition-colors hover:bg-muted"

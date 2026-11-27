@@ -45,6 +45,8 @@ export default function ProfilePage() {
   }
 
   const { user } = session
+  const rawRole = (user as { role?: string }).role
+  const role = rawRole === "vendor" || rawRole === "admin" ? rawRole : "customer"
 
   async function handleSignOut() {
     await authClient.signOut()
@@ -75,7 +77,7 @@ export default function ProfilePage() {
             </div>
             <div className="flex items-center justify-between gap-4 border-b border-border pb-3">
               <dt className="text-muted-foreground">Account role</dt>
-              <dd className="font-medium capitalize">{user.role ?? "customer"}</dd>
+              <dd className="font-medium capitalize">{role}</dd>
             </div>
             <div className="flex items-center justify-between gap-4">
               <dt className="text-muted-foreground">Member since</dt>
@@ -84,6 +86,9 @@ export default function ProfilePage() {
               </dd>
             </div>
           </dl>
+          <Button className="w-full" onClick={() => router.push(`/dashboard/${role}`)}>
+            My Dashboard
+          </Button>
           <Button variant="outline" className="w-full" onClick={handleSignOut}>
             Sign out
           </Button>
