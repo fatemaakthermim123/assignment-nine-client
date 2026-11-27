@@ -2,6 +2,7 @@
 
 import { useRef, useState, type FormEvent } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 
 import {
   CheckIcon,
@@ -30,6 +31,8 @@ import {
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { toast } from "@/components/ui/toast"
+
+import { authClient } from "@/lib/auth-client"
 
 function GoogleIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -60,29 +63,29 @@ const PASSWORD_RULES = [
   { label: "One lowercase letter", test: (value: string) => /[a-z]/.test(value) },
 ]
 
-function uploadImageToImgbb(file: File) {
-  const apiKey = process.env.NEXT_PUBLIC_IMGBB_API_KEY
-  if (!apiKey) {
-    return Promise.reject(new Error("MISSING_IMGBB_API_KEY"))
-  }
-
+async function uploadProfileImage(file: File) {
   const body = new FormData()
   body.append("image", file)
 
-  return fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
+  const response = await fetch("/api/upload-image", {
     method: "POST",
     body,
   })
-    .then((response) => response.json())
-    .then((data) => {
-      if (!data?.data?.url) {
-        throw new Error("IMGbb_UPLOAD_FAILED")
-      }
-      return data.data.url as string
-    })
+
+  if (!response.ok) {
+    throw new Error("IMAGE_UPLOAD_FAILED")
+  }
+
+  const data = await response.json()
+  if (!data?.url) {
+    throw new Error("IMAGE_UPLOAD_FAILED")
+  }
+
+  return data.url as string
 }
 
 export default function RegisterPage() {
+  const router = useRouter()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
@@ -143,44 +146,48 @@ export default function RegisterPage() {
       return
     }
 
-    let profileImageUrl: string | null = null
+    let imageUrl: string | null = null
     if (profileImage) {
-      const apiKey = process.env.NEXT_PUBLIC_IMGBB_API_KEY
-      if (!apiKey) {
+      try {
+        imageUrl = await toast.promise(uploadProfileImage(profileImage), {
+          loading: "Uploading profile image…",
+          success: "Profile image uploaded",
+          error: "Image upload failed",
+        })
+      } catch {
         toast.add({
           type: "warning",
-          title: "Image upload disabled",
-          description:
-            "Add NEXT_PUBLIC_IMGBB_API_KEY to .env to enable profile image uploads.",
+          title: "Profile image skipped",
+          description: "Your account will be created without a profile image.",
         })
-      } else {
-        try {
-          profileImageUrl = await toast.promise(uploadImageToImgbb(profileImage), {
-            loading: "Uploading profile image…",
-            success: "Profile image uploaded",
-            error: "Image upload failed",
-          })
-        } catch {
-          return
-        }
       }
     }
 
-    const payload = {
-      ...formData,
+    const { error } = await authClient.signUp.email({
+      name: formData.name,
+      email: formData.email,
+      password: formData.password,
+      image: imageUrl ?? undefined,
       role,
-      profileImage: profileImageUrl,
-    }
+    })
 
-    // TODO: implement registration functionality here.
-    // TODO: role-specific logic (vendor vs customer) will be handled later.
-    console.log("Register form data:", payload)
+    if (error) {
+      toast.add({
+        type: "error",
+        title: "Sign-up failed",
+        description: error.message ?? "Something went wrong. Please try again.",
+      })
+      return
+    }
 
     toast.add({
       type: "success",
       title: "Account created!",
       description: "Welcome aboard.",
     })
+    console.log("Sign-up successful — redirecting to home")
+    router.replace("/")
+    router.refresh()
   }
 
   function handleGoogleRegister() {
@@ -195,16 +202,50 @@ export default function RegisterPage() {
 
   return (
     <div className="flex flex-1 items-center justify-center px-4 py-10 sm:px-6">
-      <div className="grid w-full max-w-sm gap-4">
+      <div className="grid w-full max-w-lg gap-4">
         <Card className="w-full">
           <CardHeader>
-            <CardTitle className="font-heading">Create an account</CardTitle>
+            <CardTitle className="font-heading">
+              Begin Your Wedding Journey
+            </CardTitle>
             <CardDescription>
-              Sign up to get started with your account.
+              Join WedPlan and start planning your perfect day today.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="grid gap-4">
+              <div className="grid gap-2">
+                <Label>Account role</Label>
+                <RadioGroup
+                  value={role}
+                  onValueChange={(value) => setRole(value as string)}
+                  className="grid grid-cols-2 gap-2"
+                >
+                  <Label
+                    className={`flex cursor-pointer items-center gap-2 rounded-lg border p-3 text-sm transition-colors hover:bg-muted/50 ${
+                      role === "customer"
+                        ? "border-primary bg-primary/5"
+                        : "border-border"
+                    }`}
+                  >
+                    <RadioGroupItem value="customer" />
+                    <UserIcon className="size-4 text-muted-foreground" aria-hidden="true" />
+                    Customer
+                  </Label>
+                  <Label
+                    className={`flex cursor-pointer items-center gap-2 rounded-lg border p-3 text-sm transition-colors hover:bg-muted/50 ${
+                      role === "vendor"
+                        ? "border-primary bg-primary/5"
+                        : "border-border"
+                    }`}
+                  >
+                    <RadioGroupItem value="vendor" />
+                    <StoreIcon className="size-4 text-muted-foreground" aria-hidden="true" />
+                    Vendor
+                  </Label>
+                </RadioGroup>
+                {/* TODO: role-specific logic (vendor vs customer) will be handled later. */}
+              </div>
               <div className="grid gap-2">
                 <Label htmlFor="name">Full name</Label>
                 <InputGroup className="bg-card">
@@ -212,7 +253,7 @@ export default function RegisterPage() {
                     id="name"
                     type="text"
                     autoComplete="name"
-                    placeholder="John Doe"
+                    placeholder="your name"
                     className="text-foreground"
                     value={formData.name}
                     onChange={(event) =>
@@ -380,39 +421,6 @@ export default function RegisterPage() {
                     {profileImage.name}
                   </p>
                 )}
-              </div>
-
-              <div className="grid gap-2">
-                <Label>Account role</Label>
-                <RadioGroup
-                  value={role}
-                  onValueChange={(value) => setRole(value as string)}
-                  className="grid grid-cols-2 gap-2"
-                >
-                  <Label
-                    className={`flex cursor-pointer items-center gap-2 rounded-lg border p-3 text-sm transition-colors hover:bg-muted/50 ${
-                      role === "customer"
-                        ? "border-primary bg-primary/5"
-                        : "border-border"
-                    }`}
-                  >
-                    <RadioGroupItem value="customer" />
-                    <UserIcon className="size-4 text-muted-foreground" aria-hidden="true" />
-                    Customer
-                  </Label>
-                  <Label
-                    className={`flex cursor-pointer items-center gap-2 rounded-lg border p-3 text-sm transition-colors hover:bg-muted/50 ${
-                      role === "vendor"
-                        ? "border-primary bg-primary/5"
-                        : "border-border"
-                    }`}
-                  >
-                    <RadioGroupItem value="vendor" />
-                    <StoreIcon className="size-4 text-muted-foreground" aria-hidden="true" />
-                    Vendor
-                  </Label>
-                </RadioGroup>
-                {/* TODO: role-specific logic (vendor vs customer) will be handled later. */}
               </div>
 
               <Button type="submit" className="w-full">

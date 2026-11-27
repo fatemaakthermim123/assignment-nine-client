@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 
 import { EyeIcon, EyeOffIcon } from "lucide-react"
 
@@ -21,6 +22,8 @@ import {
 } from "@/components/ui/input-group"
 import { Label } from "@/components/ui/label"
 import { toast } from "@/components/ui/toast"
+
+import { authClient } from "@/lib/auth-client"
 
 function GoogleIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -46,23 +49,38 @@ function GoogleIcon(props: React.SVGProps<SVGSVGElement>) {
 }
 
 export default function LoginPage() {
+  const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   })
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    // TODO: implement login functionality here.
-    // TODO: on failed login (wrong credentials), show a toast:
-    // toast.add({ type: "error", title: "Login failed", description: "..." })
-    console.log("Login form data:", formData)
+
+    const { error } = await authClient.signIn.email({
+      email: formData.email,
+      password: formData.password,
+    })
+
+    if (error) {
+      toast.add({
+        type: "error",
+        title: "Login failed",
+        description: error.message ?? "Invalid email or password.",
+      })
+      return
+    }
+
     toast.add({
       type: "success",
       title: "Welcome back!",
       description: "You have signed in successfully.",
     })
+    console.log("Sign-in successful — redirecting to home")
+    router.replace("/")
+    router.refresh()
   }
 
   function handleGoogleLogin() {
@@ -77,10 +95,12 @@ export default function LoginPage() {
 
   return (
     <div className="flex flex-1 items-center justify-center px-4 py-10 sm:px-6">
-      <div className="grid w-full max-w-sm gap-4">
-      <Card className="w-full max-w-sm">
-        <CardHeader>          <CardTitle className="font-heading">Welcome back</CardTitle>
-          <CardDescription>Login to your account to continue.</CardDescription>
+      <div className="grid w-full max-w-md gap-4">
+      <Card className="w-full">
+        <CardHeader>          <CardTitle className="font-heading">Welcome Back to WedPlan</CardTitle>
+          <CardDescription>
+            Sign in to continue planning your perfect day.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="grid gap-4">
