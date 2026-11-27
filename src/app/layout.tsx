@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Geist_Mono, Playfair_Display, Poppins } from "next/font/google";
-import { Navbar } from "./components/navbar";
+import { SiteHeader } from "./components/site-header";
 import { Toaster } from "@/components/ui/toast";
 import "./globals.css";
 
@@ -32,7 +32,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${poppins.variable} ${playfair.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <Navbar />
+        <SiteHeader />
         {children}
         <Toaster />
       </body>
