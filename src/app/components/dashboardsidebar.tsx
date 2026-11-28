@@ -52,7 +52,7 @@ const menuItemsByRole: Record<Role, MenuItem[]> = {
     vendor: [
         { id: "overview", name: "Overview", url: "/dashboard/vendor", icon: LayoutDashboard },
         { id: "my-services", name: "My Services", url: "/dashboard/vendor/services", icon: Package },
-        { id: "add-service", name: "Add Service", url: "/dashboard/vendor/services/new", icon: PlusCircle },
+        { id: "add-service", name: "Add Service", url: "/dashboard/vendor/addService", icon: PlusCircle },
         { id: "booking-requests", name: "Booking Requests", url: "/dashboard/vendor/bookings", icon: CalendarCheck },
         { id: "subscription", name: "Subscription", url: "/dashboard/vendor/subscription", icon: Crown },
         { id: "profile-settings", name: "Profile Settings", url: "/dashboard/vendor/settings", icon: Settings },

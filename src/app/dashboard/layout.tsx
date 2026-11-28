@@ -1,3 +1,6 @@
+import Link from "next/link"
+import { House } from "lucide-react"
+
 import { Separator } from "@/components/ui/separator"
 import {
   SidebarInset,
@@ -15,6 +18,14 @@ export default function DashboardLayout({ children }: LayoutProps<"/dashboard">)
           <div className="flex items-center gap-2">
             <SidebarTrigger className="-ml-1" />
             <Separator orientation="vertical" className="mr-2 h-4" />
+            <Link
+              href="/"
+              className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <House className="size-4" />
+              Home
+            </Link>
+            <Separator orientation="vertical" className="mx-1 h-4" />
             <span className="text-sm font-medium">Dashboard</span>
           </div>
         </header>
