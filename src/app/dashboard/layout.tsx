@@ -13,23 +13,19 @@ export default function DashboardLayout({ children }: LayoutProps<"/dashboard">)
   return (
     <SidebarProvider>
       <DashboardSidebar />
-      <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2 border-b border-border px-4 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
+       <SidebarInset className="min-h-0 min-w-0 overflow-hidden">
+ <header className="h-16 shrink-0 flex items-center gap-2 border-b border-border px-4 bg-background">
           <div className="flex items-center gap-2">
             <SidebarTrigger className="-ml-1" />
-            <Separator orientation="vertical" className="mr-2 h-4" />
-            <Link
-              href="/"
-              className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-            >
-              <House className="size-4" />
-              Home
-            </Link>
+           
+         
             <Separator orientation="vertical" className="mx-1 h-4" />
             <span className="text-sm font-medium">Dashboard</span>
           </div>
         </header>
-        <div className="flex flex-1 flex-col p-4 md:p-6">{children}</div>
+       <main className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-6">
+      {children}
+    </main>
       </SidebarInset>
     </SidebarProvider>
   )

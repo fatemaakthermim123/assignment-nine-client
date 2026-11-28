@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { Geist_Mono, Playfair_Display, Poppins } from "next/font/google";
-import { SiteHeader } from "./components/site-header";
+// import { SiteHeader } from "./components/site-header";
 import { Toaster } from "@/components/ui/toast";
 import "./globals.css";
+import { Navbar } from "./components/navbar";
 
 const poppins = Poppins({
   variable: "--font-poppins",
@@ -32,7 +33,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${poppins.variable} ${playfair.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <SiteHeader />
+         {/* <SiteHeader />  */}
+        <Navbar></Navbar>
         {children}
         <Toaster />
       </body>

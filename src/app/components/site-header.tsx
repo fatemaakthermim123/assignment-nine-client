@@ -1,17 +1,17 @@
-"use client"
+// "use client"
 
-import { usePathname } from "next/navigation"
+// import { usePathname } from "next/navigation"
 
-import { Navbar } from "./navbar"
+// import { Navbar } from "./navbar"
 
-function SiteHeader() {
-  const pathname = usePathname()
+// function SiteHeader() {
+//   const pathname = usePathname()
 
-  if (pathname.startsWith("/dashboard")) {
-    return null
-  }
+//   if (pathname.startsWith("/dashboard")) {
+//     return null
+//   }
 
-  return <Navbar />
-}
+//   return <Navbar />
+// }
 
-export { SiteHeader }
+// export { SiteHeader }

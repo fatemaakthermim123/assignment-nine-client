@@ -79,8 +79,8 @@ export function DashboardSidebar() {
     const role = getRole((user as { role?: string } | undefined)?.role)
 
     return (
-        <Sidebar>
-            <SidebarHeader>
+       <Sidebar className="top-20 !h-[calc(100svh-5rem)]">
+            <SidebarHeader >
                 {!isPending && user && (
                     <div className="flex min-w-0 items-center gap-2 px-2 py-1">
                         <Avatar size="lg">
